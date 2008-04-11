@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+
+<project name="featherdb" basedir="." default="build">
+    <property file="build.properties"/>
+	<property name="version.major" value="0"/>
+	<property name="version.minor" value="0.1"/>
+
+	<target name="compile" depends="init">
+		<javac srcdir="src/java"
+         destdir="build/classes"
+         classpathref="compile.classpath"
+         debug="on"
+		 target="1.6"
+		/>
+		<javac srcdir="src/test"
+         destdir="build/classes"
+         classpathref="compile.classpath"
+         debug="on"
+		 target="1.6"
+		/>
+	</target>
+	<target name="build" depends="compile">
+		<copy todir="build/classes">
+			<fileset dir="src/java">
+				<exclude name="**/*.java"/>
+				<include name="**"/>
+			</fileset>
+		</copy>
+	</target>
+	<target name="jar" depends="build">
+		<jar destfile="dist/featherdb-${version.major}.${version.minor}.jar">
+			<fileset dir="build/classes">
+				<exclude name="test"/>
+			</fileset>
+			<fileset file="NOTICE"/>
+			<fileset file="LICENSE"/>
+		</jar>
+	</target>
+	
+	<target name="test" depends="build">
+		<delete dir="test"/>
+		<mkdir dir="test"/>
+		<mkdir dir="test/core"/>
+
+		<junit printsummary="yes" haltonfailure="yes">
+			
+			<classpath refid="test.classpath"/>
+			<formatter type="plain"/>
+			<batchtest fork="yes" todir="test/">
+				<fileset dir="src/test" includes="**/*Test.java" excludes="**/BaseTest.java"/>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<!-- build paths -->
+	<path id="compile.classpath">
+		<fileset dir="lib" includes="**/*jar"/>
+	</path>
+	<path id="test.classpath">
+		<fileset dir="lib" includes="**/*jar"/>
+		<dirset dir="build/classes"/>
+	</path>
+	<path id="run.classpath">
+		<fileset dir="lib/" includes="**/*jar"/>
+		<dirset dir="build/classes"/>
+	</path>
+	<!-- Making directories required for building... -->
+	<target name="init">
+		<mkdir dir="build"/>
+		<mkdir dir="build/classes"/>
+		<mkdir dir="dist"/>
+	</target>
+	<target name="clean">
+		<delete dir="build"/>
+		<delete dir="dist"/>
+		<delete dir="logs"/>
+	</target>
+	<target name="javadoc">
+		<delete dir="javadoc"/>
+		<mkdir dir="javadoc"/>
+		<javadoc
+			destdir="javadoc"
+		    author="true"
+		    version="true"
+		    use="true"
+			classpathref="run.classpath"
+		    windowtitle="Feather DB ${version.major}.${version.minor} API">
+		
+			<packageset dir="src/java" defaultexcludes="yes">
+				<include name="**"/>
+			</packageset>
+		</javadoc>
+	</target>
+	
+	<condition property="running">
+		<socket server="localhost" port="8889"/>
+	</condition>
+	<target name="shutdown-running" if="running">
+		<touch file="tmp"/>
+		<get src="http://localhost:8889/_shutdown" 
+		    dest="tmp" 
+			ignoreerrors="true"
+		/>
+		<sleep seconds="5"/>
+		<delete file="tmp"/>
+	</target>
+	<target name="start-server">
+		<java
+			classname="com.fourspaces.featherdb.FeatherDB"
+			classpathref="run.classpath"
+			fork="true">
+		</java>
+	</target>
+	<target name="run" depends="build" description="Run the FeatherDB Server">
+		<antcall target="shutdown-running"/>
+		<antcall target="start-server"/>
+	</target>
+</project>
