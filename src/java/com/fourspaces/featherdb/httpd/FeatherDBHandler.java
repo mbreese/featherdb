@@ -207,6 +207,18 @@ public class FeatherDBHandler extends AbstractHandler {
 		if (param!=null && !param.equals("")) {
 			cred = featherDB.getAuthentication().getCredentialsFromToken(param);
 			if (cred!=null) {
+				log.debug("Authenticated as {} => {} via Req param",cred.getUsername(), cred.getToken());
+				addCredentialedCookie(response,cred);
+				return cred;
+			}
+		}
+		
+		String headerparam = request.getHeader("FeatherDB-Token");
+		if (headerparam!=null && !headerparam.equals("")) {
+			cred = featherDB.getAuthentication().getCredentialsFromToken(headerparam);
+			if (cred!=null) {
+				log.debug("Authenticated as {} => {} via HTTP-Header",cred.getUsername(), cred.getToken());
+				addCredentialedCookie(response,cred);
 				return cred;
 			}
 		}
@@ -227,9 +239,7 @@ public class FeatherDBHandler extends AbstractHandler {
 					
 					if (cred!=null) {
 						log.debug("Authenticated as {} => {} via HTTP-AUTH",cred.getUsername(), cred.getToken());
-						Cookie cookie = new Cookie(COOKIE_ID, cred.getToken());
-						cookie.setMaxAge(24*60*60); // max time is one day... afterwhich, it needs to reauth.
-						response.addCookie(cookie);
+						addCredentialedCookie(response,cred);
 					}
 					return cred;
 				}
@@ -239,5 +249,11 @@ public class FeatherDBHandler extends AbstractHandler {
 		response.addHeader("WWW-Authenticate"," Basic realm=\"FeatherDB\"");
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"You need a username and password");
 		return null;
+	}
+	
+	private void addCredentialedCookie(HttpServletResponse response, Credentials cred) {
+		Cookie cookie = new Cookie(COOKIE_ID, cred.getToken());
+		cookie.setMaxAge(24*60*60); // max time is one day... afterwhich, it needs to reauth.
+		response.addCookie(cookie);
 	}
 }

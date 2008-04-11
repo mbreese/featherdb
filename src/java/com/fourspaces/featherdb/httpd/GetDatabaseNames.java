@@ -15,7 +15,9 @@ public class GetDatabaseNames extends BaseRequestHandler {
 		Set<String> dbs = featherDB.getBackend().getDatabaseNames();
 		JSONArray ar = new JSONArray();
 		for (String d:dbs) {
-			ar.put(d);
+			if (!d.startsWith("_")) {
+				ar.put(d);
+			}
 		}
 		sendJSONString(response, ar);
 	}

@@ -17,7 +17,7 @@ public class DeleteDB extends BaseRequestHandler {
 	}
 
 	public boolean match(Credentials credentials, HttpServletRequest request, String db, String id) {
-		return (db!=null && id==null && request.getMethod().equals("DELETE") && featherDB.getBackend().doesDocumentExist(db, id));
+		return (db!=null && id==null && request.getMethod().equals("DELETE") && credentials.isSA() && featherDB.getBackend().doesDatabaseExist(db));
 	}
 
 }
