@@ -78,7 +78,7 @@ If you are interested in more information about it, leave a comment, or send me 
  
 # Getting started
 
-1 .Download the code via SVN from the above url
+1. Download the code via SVN from the above url
 2. Run "ant run".
   This starts the server with the default configuration:
     * Port: 8889
@@ -100,18 +100,20 @@ Important URIs
     GET /_shutdown -> shutsdown the server (must be admin)
 
 Databases
+
     GET /{dbnme} -> db stats
     PUT /{dbname} -> add a database (must be authenticated as admin) 
     DELETE /{dbname} -> remove a database (must be authenticated as admin)
 
 Documents
+
     GET /{dbname}/{documentid} -> Get the document's current revision
     If this isn't found, but /db/docid/index is found, this will be returned instead
 
 Optional parameters:
+
     showMeta=true -> returns the meta-information for the document (see above)
     showRevisions=true -> includes a list of available revisions in the meta-information
-
     GET /{dbname}/{documentid}/{revision} -> Get the document's content (see above)
     POST or PUT /{dbname}/{documentid} -> write the request's body as a new revision of the given document
     If the documentid doesn't exist, it is created
@@ -120,8 +122,10 @@ Optional parameters:
     DELETE /{dbname}/{documentid} -> delete the document (must be able to write to db)
 
 Views
+
     POST /{dbname}/_temp_view -> perform an adhoc query  
     The contents of the POST should be in the format of a javascript function
+
     Ex: 
     function(doc) { if (doc.value=='foo') {map(doc.id,doc.value); }}
     
@@ -134,6 +138,7 @@ Views
     This actually calls an included view named "_all_docs"
 
 Views can be either written in either Java or JavaScript.  View documents are JSON documents that have the following attributes:
+
     'view_type': 'application/javascript' or 'java:fully.qualified.class.Name'
 
 Java views must implement the interface: com.fourspaces.featherdb.views.View
